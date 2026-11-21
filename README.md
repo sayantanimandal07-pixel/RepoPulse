@@ -7,6 +7,11 @@ RepoPulse is a full-stack developer analytics platform designed to help develope
 The project integrates the GitHub REST API with a backend authentication and developer-data management system.
 
 ---
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6-yellow)
+![Node.js](https://img.shields.io/badge/Node.js-Backend-green)
+![Express.js](https://img.shields.io/badge/Express.js-Framework-black)
+![MongoDB](https://img.shields.io/badge/MongoDB-Database-brightgreen)
+![GitHub](https://img.shields.io/badge/GitHub-API-black)
 
 ## ✨ Key Features
 
