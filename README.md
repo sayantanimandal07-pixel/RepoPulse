@@ -1,5 +1,4 @@
 # 🚀 RepoPulse
-
 ### Your GitHub Activity. Your Developer Journey. One Platform.
 
 RepoPulse is a full-stack developer analytics platform designed to help developers explore GitHub profiles, retrieve developer information, and gain insights into their coding journey.
