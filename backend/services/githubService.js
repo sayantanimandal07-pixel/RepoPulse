@@ -29,6 +29,12 @@ const getGitHubRepos = async (username) => {
         console.log("GitHub Repositories API Error:", error.message);
         throw error;
     }
+    console.log("GitHub Repository Dates:", repos.map(repo => ({
+    name: repo.name,
+    created_at: repo.created_at,
+    updated_at: repo.updated_at,
+    pushed_at: repo.pushed_at
+})));
 };
 
 module.exports = {

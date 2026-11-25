@@ -1,10 +1,19 @@
+
+const Developer = require("../models/Developer");
+
+const {
+    getGitHubUser,
+    getGitHubRepos
+} = require("../services/githubService");
+
 const {
     calculateLanguageDistribution,
     calculateRepositoryStats,
     calculateRepositoryActivity,
-    calculateRepositoryHealth
+    calculateRepositoryHealth,
+    generateRepositoryRecommendations
 } = require("../services/analyticsService");
-const Developer = require("../models/Developer");
+
 
 // Fetch GitHub developer profile
 const fetchGitHubProfile = async (req, res) => {
@@ -16,7 +25,6 @@ const fetchGitHubProfile = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "GitHub profile fetched successfully!",
-
             data: {
                 username: user.login,
                 name: user.name,
@@ -30,7 +38,6 @@ const fetchGitHubProfile = async (req, res) => {
         });
 
     } catch (error) {
-
         if (error.response && error.response.status === 404) {
             return res.status(404).json({
                 success: false,
@@ -51,6 +58,7 @@ const fetchGitHubProfile = async (req, res) => {
         });
     }
 };
+
 
 // Fetch GitHub repositories
 const fetchGitHubRepositories = async (req, res) => {
@@ -88,6 +96,7 @@ const fetchGitHubRepositories = async (req, res) => {
     }
 };
 
+
 // Save GitHub profile and repositories to MongoDB
 const saveGitHubDeveloper = async (req, res) => {
     try {
@@ -117,9 +126,11 @@ const saveGitHubDeveloper = async (req, res) => {
                 stars: repo.stargazers_count,
                 forks: repo.forks_count,
                 repoUrl: repo.html_url,
-                createdAt: repo.createdAt,
-                updatedAt: repo.updatedAt,
-                pushedAt: repo.pushedAt
+
+                // Correct GitHub API date fields
+                createdAt: repo.created_at,
+                updatedAt: repo.updated_at,
+                pushedAt: repo.pushed_at
             }))
         };
 
@@ -128,7 +139,7 @@ const saveGitHubDeveloper = async (req, res) => {
             { githubUsername: user.login },
             { $set: developerData },
             {
-                new: true,
+                returnDocument: "after",
                 upsert: true,
                 runValidators: true
             }
@@ -157,17 +168,16 @@ const saveGitHubDeveloper = async (req, res) => {
     }
 };
 
+
 // Get programming language analytics
 const getLanguageAnalytics = async (req, res) => {
     try {
         const username = req.params.username;
 
-        // Find developer in MongoDB
         const developer = await Developer.findOne({
             githubUsername: username
         });
 
-        // Check if developer exists
         if (!developer) {
             return res.status(404).json({
                 success: false,
@@ -175,7 +185,6 @@ const getLanguageAnalytics = async (req, res) => {
             });
         }
 
-        // Calculate language distribution
         const analytics = calculateLanguageDistribution(
             developer.repositories
         );
@@ -196,6 +205,7 @@ const getLanguageAnalytics = async (req, res) => {
         });
     }
 };
+
 
 // Get repository statistics
 const getRepositoryStats = async (req, res) => {
@@ -232,6 +242,7 @@ const getRepositoryStats = async (req, res) => {
     }
 };
 
+
 // Get developer repository activity
 const getRepositoryActivity = async (req, res) => {
     try {
@@ -266,6 +277,7 @@ const getRepositoryActivity = async (req, res) => {
         });
     }
 };
+
 
 // Get repository health scores
 const getRepositoryHealth = async (req, res) => {
@@ -302,6 +314,46 @@ const getRepositoryHealth = async (req, res) => {
     }
 };
 
+
+// Get repository improvement recommendations
+const getRepositoryRecommendations = async (req, res) => {
+    try {
+        const { username } = req.params;
+
+        const developer = await Developer.findOne({
+            githubUsername: username
+        });
+
+        if (!developer) {
+            return res.status(404).json({
+                success: false,
+                message: "Developer not found in database"
+            });
+        }
+
+        const recommendations = generateRepositoryRecommendations(
+            developer.repositories
+        );
+
+        res.status(200).json({
+            success: true,
+            username: developer.githubUsername,
+            recommendations: recommendations
+        });
+
+    } catch (error) {
+        console.log("Recommendation Error:", error.message);
+
+        res.status(500).json({
+            success: false,
+            message: "Unable to generate repository recommendations",
+            error: error.message
+        });
+    }
+};
+
+
+// Export all controller functions
 module.exports = {
     fetchGitHubProfile,
     fetchGitHubRepositories,
@@ -309,5 +361,6 @@ module.exports = {
     getLanguageAnalytics,
     getRepositoryStats,
     getRepositoryActivity,
-    getRepositoryHealth
+    getRepositoryHealth,
+    getRepositoryRecommendations
 };

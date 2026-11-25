@@ -8,7 +8,8 @@ const {
     getLanguageAnalytics,
     getRepositoryStats,
     getRepositoryActivity,
-    getRepositoryHealth
+    getRepositoryHealth,
+    getRepositoryRecommendations
 } = require("../controllers/githubController");
 
 
@@ -30,5 +31,7 @@ router.get("/:username/analytics/repositories", getRepositoryStats);
 router.get("/:username/analytics/activity", getRepositoryActivity);
 
 router.get("/:username/analytics/health", getRepositoryHealth);
+
+router.get("/:username/analytics/recommendations", getRepositoryRecommendations);
 
 module.exports = router;

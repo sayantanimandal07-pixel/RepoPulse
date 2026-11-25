@@ -123,6 +123,89 @@ const calculateRepositoryActivity = (repositories) => {
     };
 };
 
+
+// Generate repository improvement recommendations
+const generateRepositoryRecommendations = (repositories) => {
+
+    return repositories.map(repo => {
+
+        const recommendations = [];
+
+        // 1. Check repository description
+        if (!repo.description || repo.description.trim() === "") {
+            recommendations.push({
+                category: "Documentation",
+                issue: "Missing repository description",
+                suggestion: "Add a clear description explaining what your project does.",
+                priority: "Medium"
+            });
+        } else if (repo.description.length <= 20) {
+            recommendations.push({
+                category: "Documentation",
+                issue: "Description is too short",
+                suggestion: "Write a more detailed description of your project.",
+                priority: "Low"
+            });
+        }
+
+        // 2. Check repository activity
+        if (!repo.pushedAt) {
+            recommendations.push({
+                category: "Activity",
+                issue: "Push date unavailable",
+                suggestion: "Sync your repository data to check its latest activity.",
+                priority: "Medium"
+            });
+        } else {
+            const daysSinceLastPush = Math.floor(
+                (new Date() - new Date(repo.pushedAt)) /
+                (1000 * 60 * 60 * 24)
+            );
+
+            if (daysSinceLastPush > 180) {
+                recommendations.push({
+                    category: "Activity",
+                    issue: "Repository has been inactive",
+                    suggestion: "Consider updating the project or documenting its current status.",
+                    priority: "High"
+                });
+            } else if (daysSinceLastPush > 90) {
+                recommendations.push({
+                    category: "Activity",
+                    issue: "Limited recent activity",
+                    suggestion: "Consider making meaningful updates to the repository.",
+                    priority: "Medium"
+                });
+            }
+        }
+
+        // 3. Check programming language
+        if (!repo.language) {
+            recommendations.push({
+                category: "Technical",
+                issue: "Programming language not detected",
+                suggestion: "Check whether your repository contains detectable source code.",
+                priority: "Low"
+            });
+        }
+
+        // 4. Return recommendations
+        return {
+            repositoryName: repo.repoName,
+            totalRecommendations: recommendations.length,
+            recommendations: recommendations.length > 0
+                ? recommendations
+                : [{
+                    category: "Overall",
+                    issue: "No improvement areas detected by current checks",
+                    suggestion: "Continue maintaining your repository.",
+                    priority: "Low"
+                }]
+        };
+    });
+};
+
+
 // Calculate repository health score
 const calculateRepositoryHealth = (repositories) => {
 
@@ -204,5 +287,6 @@ module.exports = {
     calculateLanguageDistribution,
     calculateRepositoryStats,
     calculateRepositoryActivity,
-    calculateRepositoryHealth
+    calculateRepositoryHealth,
+    generateRepositoryRecommendations
 };
